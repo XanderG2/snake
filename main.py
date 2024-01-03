@@ -6,6 +6,13 @@ height = 500
 screen = pygame.display.set_mode((width, height))
 
 white = (255,255,255)
+green = (0,255,0)
+red = (255,0,0)
+black = (0,0,0)
+
+locations = []
+length = 1
+direction = 90
 
 running = True
 while running:
@@ -13,7 +20,17 @@ while running:
         if event.type == pygame.QUIT:
             running = False
             sys.exit()
-    screen.fill(white)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RIGHT:
+                direction = 90
+            if event.key == pygame.K_LEFT:
+                direction = -90
+            if event.key == pygame.K_DOWN:
+                direction = 180
+            if event.key == pygame.K_UP:
+                direction = 0
+            print(direction)
+    screen.fill(black)
     pygame.display.flip()
 
 pygame.quit()

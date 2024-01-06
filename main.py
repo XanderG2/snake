@@ -1,5 +1,7 @@
 import pygame, sys, time, random
 pygame.init()
+pygame.font.init()
+my_font = pygame.font.SysFont('comicsans', 45)
 
 width = 900 # ensure this is divisible by snake_width
 height = 500 # ensure this is divisible by snake_height
@@ -13,12 +15,17 @@ snakegreen = (100,255,100) # the colour used by every snake section apart from t
 red = (255,0,0) # the colour used by apples
 black = (0,0,0) # the background colour
 
-locations = [] # the locations of the snake sections, locations[0] being the end, locations[-1] being the start
-applelocations = []
-pos = [0,0] # the position of the snake head
-length = 1 # length of snakes
-appleamount = 1 # amount of apples to be on the board at once, make it less than width//snake_width*height//snake_height
-direction = 90 # 90 is right, 180 is down, -90 is left, 0 is up
+def reset():
+    global locations, applelocations, pos, length, appleamount, direction, snakeDead
+    locations = [] # the locations of the snake sections, locations[0] being the end, locations[-1] being the start
+    applelocations = []
+    pos = [0,0] # the position of the snake head
+    length = 1 # length of snakes
+    appleamount = 1 # amount of apples to be on the board at once, make it less than width//snake_width*height//snake_height
+    direction = 90 # 90 is right, 180 is down, -90 is left, 0 is up
+    snakeDead = False
+
+reset()
 
 running = True
 while running:
@@ -35,38 +42,55 @@ while running:
                 direction = 180
             if event.key == pygame.K_UP:
                 direction = 0
-            #if event.key == pygame.K_SPACE: #debug
-            #    length += 1
-    if appleamount != len(applelocations): # spawn a new apple if there are not enough to meet the amount on line 20
-        newlocation = pygame.Rect(
-                (random.choice(
-                    range(0, width, snake_width) # choose out of a list between 0 and the screen width, in increments of snake_width (grid width)
-                ), 
-                random.choice(
-                    range(0, height, snake_height) # choose out of a list between 0 and the screen height, in increments of snake_height (grid height)
-                )), 
-                (snake_width, 
-                 snake_height))
-        if newlocation not in applelocations and newlocation not in locations: # if the apple spawns, it will not spawn on another apple and will not spawn on the snake
-            applelocations.append(newlocation)                               #!# note: this will make it crash when there are not enough spaces for the apple to spawn in,
-    x = pos[0] # pos is defined on line 18                                     # I need to fix this, but probably never will
-    y = pos[1] # and line 54
-    pos = [
-        x+snake_width if direction == 90 else x-snake_width if direction == -90 else x, # increase or decrease x if direction is right or left, respectively, or don't if it isn't
-        y+snake_height if direction == 180 else y-snake_width if direction == 0 else y  # increase or decrease y if direction is down or up, respectively, or don't if it isn't
-    ]
-    locations.append(pygame.Rect((pos[0], pos[1]), (snake_width,snake_height))) # add the snake head to the list
-    if len(locations) > length:
-        del locations[0] # delete the end of the snake if the length of the snake if the snake is already the correct length
-    if locations[-1] in applelocations: # if the snake head is touching an apple
-        del applelocations[applelocations.index(locations[-1])] # delete the apple the snake is touching
-        length += 1
-    screen.fill(black)
-    for location in range(len(locations)-1): # for every snake section that is not the head
-        pygame.draw.rect(screen, snakegreen, locations[location]) # draw the section in green
-    pygame.draw.rect(screen, green, locations[-1]) # now do that for the head with a slightly different green colour
-    for apple in applelocations: # for every apple
-        pygame.draw.rect(screen, red, apple) # draw the apple in red
+            if event.key == pygame.K_SPACE: #debug
+                length += 1
+            if (event.key == pygame.K_RETURN) or (event.key == pygame.K_KP_ENTER) and snakeDead:
+                reset()
+            if event.key == pygame.K_x:
+                running = False
+                sys.exit()
+    if not snakeDead:
+        if appleamount != len(applelocations): # spawn a new apple if there are not enough to meet the amount on line 20
+            newlocation = pygame.Rect(
+                    (random.choice(
+                        range(0, width, snake_width) # choose out of a list between 0 and the screen width, in increments of snake_width (grid width)
+                    ), 
+                    random.choice(
+                        range(0, height, snake_height) # choose out of a list between 0 and the screen height, in increments of snake_height (grid height)
+                    )), 
+                    (snake_width, 
+                    snake_height))
+            if newlocation not in applelocations and newlocation not in locations: # if the apple spawns, it will not spawn on another apple and will not spawn on the snake
+                applelocations.append(newlocation)                               #!# note: this will make it crash when there are not enough spaces for the apple to spawn in,
+        x = pos[0] # pos is defined on line 18                                     # I need to fix this, but probably never will
+        y = pos[1] # and line 54
+        pos = [
+            x+snake_width if direction == 90 else x-snake_width if direction == -90 else x, # increase or decrease x if direction is right or left, respectively, or don't if it isn't
+            y+snake_height if direction == 180 else y-snake_width if direction == 0 else y  # increase or decrease y if direction is down or up, respectively, or don't if it isn't
+        ]
+        locations.append(pygame.Rect((pos[0], pos[1]), (snake_width,snake_height))) # add the snake head to the list
+        if len(locations) > length:
+            del locations[0] # delete the end of the snake if the length of the snake if the snake is already the correct length
+        snakehead = locations[-1]
+        if snakehead in applelocations: # if the snake head is touching an apple
+            del applelocations[applelocations.index(snakehead)] # delete the apple the snake is touching
+            length += 1
+        if snakehead in locations[0:-1]:
+            snakeDead = True
+        screen.fill(black)
+        for location in range(len(locations)-1): # for every snake section that is not the head
+            pygame.draw.rect(screen, snakegreen, locations[location]) # draw the section in green
+        pygame.draw.rect(screen, green, snakehead) # now do that for the head with a slightly different green colour
+        for apple in applelocations: # for every apple
+            pygame.draw.rect(screen, red, apple) # draw the apple in red
+    if snakeDead:
+        screen.fill(black)
+        text1 = my_font.render("You're dead!", False, (white))
+        text2 = my_font.render("Press enter to play again.", False, (white))
+        text3 = my_font.render("Press X to close.", False, (white))
+        screen.blit(text1, ((width//2)-(text1.get_width()//2), (height//2)-(text1.get_height()//2)-(text1.get_height())))
+        screen.blit(text2, ((width//2)-(text2.get_width()//2), (height//2)-(text2.get_height()//2)))
+        screen.blit(text3, ((width//2)-(text3.get_width()//2), (height//2)-(text3.get_height()//2)+(text3.get_height())))
     pygame.display.flip() # draw
     time.sleep(0.5)
 

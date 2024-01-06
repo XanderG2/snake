@@ -6,6 +6,7 @@ my_font = pygame.font.SysFont('comicsans', 45) # font used later in the code. (f
 width = 900 # ensure this is divisible by snake_width
 height = 500 # ensure this is divisible by snake_height
 screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Snake by Xander") # set the title to snake by xander
 
 snake_width, snake_height = 50, 50 # these are basically each grid cell's width and height
 

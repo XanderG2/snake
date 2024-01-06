@@ -77,6 +77,8 @@ while running:
             length += 1
         if snakehead in locations[0:-1]:
             snakeDead = True
+        if pos[0] < 0 or pos[0] > width or pos[1] < 0 or pos[1] > height:
+            snakeDead = True
         screen.fill(black)
         for location in range(len(locations)-1): # for every snake section that is not the head
             pygame.draw.rect(screen, snakegreen, locations[location]) # draw the section in green
